@@ -1,18 +1,58 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import Blog from './components/Blog'
+import blogService from './services/blogs'
 
-class App extends Component {
+const loginForm = (props) => {
+  <form onSubmit={props.submit}> 
+    <div> 
+      käyttäjätunnus
+      <input
+        type="text"
+        value={props.username}
+        onChange={props.handleUser}
+        />
+    </div>
+    <div> 
+      salasana
+      <input
+        type="text"
+        value={props.password}
+        onChange={props.handlePass}
+        />
+    </div>
+    <button type="submit">kirjaudu</button>  
+  </form>
+}
+
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      blogs: [],
+      username: '',
+      password: '',
+      user: null
+    }
+  }
+
+  componentDidMount() {
+    blogService.getAll().then(blogs =>
+      this.setState({ blogs })
+    )
+  }
+  
+  login = (event) => {
+    event.preventDefault()
+    console.log('login with', this.state.username, this.state.password)
+  }
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+      <div>
+        <h2>blogs</h2>
+        {this.state.blogs.map(blog => 
+          <Blog key={blog._id} blog={blog}/>
+        )}
       </div>
     );
   }
