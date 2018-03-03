@@ -29,4 +29,20 @@ describe('Simple blog', () => {
     const contentDiv = blogComponent.find('.content')
     expect(contentDiv.text()).toContain(blog.likes)
   })
+
+  it('clicking like twice calls handler twice', () => {
+    const mockHandler = jest.fn()
+
+    const blogComponent = shallow(
+      <SimpleBlog blog={blog} onClick={mockHandler}/>
+    )
+
+    const button = blogComponent.find('button')
+
+    button.simulate('click')
+    button.simulate('click')
+
+    expect(mockHandler.mock.calls.length).toBe(2)
+
+  })
 })
