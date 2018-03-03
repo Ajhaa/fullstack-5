@@ -198,7 +198,7 @@ class App extends React.Component {
       </div>
     )
     const newBlog = () => (
-      <Togglable buttonLabel="new blog" ref={component => this.newBlog = component}>
+      <Togglable buttonLabel="cancel" ref={component => this.newBlog = component}>
         <NewBlog
           submit={this.addBlog}
           title={this.state.blogTitle}
