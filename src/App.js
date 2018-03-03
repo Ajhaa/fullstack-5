@@ -1,28 +1,32 @@
 import React from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
+import loginService from './services/login'
 
-const loginForm = (props) => {
-  <form onSubmit={props.submit}> 
-    <div> 
+const LoginForm = (props) => (
+  <form onSubmit={props.submit}>
+    <div>
       käyttäjätunnus
       <input
         type="text"
+        name="username"
         value={props.username}
-        onChange={props.handleUser}
-        />
+        onChange={props.handleuser}
+      />
     </div>
-    <div> 
+    <div>
       salasana
       <input
         type="text"
+        name="password"
         value={props.password}
-        onChange={props.handlePass}
-        />
+        onChange={props.handlepass}
+      />
     </div>
-    <button type="submit">kirjaudu</button>  
+    <button type="submit">kirjaudu</button>
   </form>
-}
+)
+
 
 class App extends React.Component {
   constructor(props) {
@@ -40,19 +44,50 @@ class App extends React.Component {
       this.setState({ blogs })
     )
   }
-  
-  login = (event) => {
+
+  login = async (event) => {
     event.preventDefault()
-    console.log('login with', this.state.username, this.state.password)
+    try {
+      const user = await loginService.login({
+        user: this.state.username,
+        password: this.state.password
+      })
+      this.setState({ username: '', password: '', user })
+    } catch (error) {
+      console.log("Invalid username or password")
+    }
   }
+
+  handleTextField = (event) => {
+    this.setState({ [event.target.name]: event.target.value })
+  }
+
+  loginForm = () => {
+    return (
+      <LoginForm
+        submit={this.login}
+        username={this.state.username}
+        password={this.state.password}
+        handleuser={this.handleTextField}
+        handlepass={this.handleTextField}
+      />
+    )
+  }
+
+  blogDiv = () => (
+    <div>
+      <h2>blogs</h2>
+        {this.state.blogs.map(blog =>
+          <Blog key={blog.id} blog={blog} />
+        )}
+    </div>
+  )
 
   render() {
     return (
       <div>
-        <h2>blogs</h2>
-        {this.state.blogs.map(blog => 
-          <Blog key={blog._id} blog={blog}/>
-        )}
+        {this.state.user === null ?
+          this.loginForm() : this.blogDiv()}
       </div>
     );
   }
