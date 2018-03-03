@@ -2,6 +2,7 @@ import React from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import './App.css'
 
 const LoginForm = (props) => (
   <form onSubmit={props.submit}>
@@ -27,6 +28,30 @@ const LoginForm = (props) => (
   </form>
 )
 
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="message">
+      {message}
+    </div>
+  )
+}
+
+const Error = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="error">
+      {message}
+    </div>
+  )
+}
+
 
 class App extends React.Component {
   constructor(props) {
@@ -39,6 +64,8 @@ class App extends React.Component {
       blogTitle: '',
       blogAuthor: '',
       blogUrl: '',
+      notificationMessage: null,
+      errorMessage: null,
     }
   }
 
@@ -65,15 +92,24 @@ class App extends React.Component {
 
       window.localStorage.setItem('loggedBlogUser', JSON.stringify(user))
       blogService.setToken(user.token)
-      this.setState({ username: '', password: '', user })
+      this.setState({ username: '', password: '', user, notificationMessage: ('logged in as user ' + user.username)})
+      setTimeout(() => {
+        this.setState({notificationMessage: null})
+      }, 5000);
     } catch (error) {
-      console.log("Invalid username or password")
+      this.setState({errorMessage: 'wrong username or password'})
+      setTimeout(() => {
+        this.setState({errorMessage: null})
+      }, 5000);
     }
   }
 
   logout = () => {
     window.localStorage.removeItem('loggedBlogUser')
-    this.setState({ user: null })
+    this.setState({ user: null, notificationMessage: 'logout succesful' })
+    setTimeout(() => {
+      this.setState({notificationMessage: null})
+    }, 5000);
   }
 
   handleTextField = (event) => {
@@ -89,15 +125,23 @@ class App extends React.Component {
         url: this.state.blogUrl
       }
       const response = await blogService.create(newBlog)
-
+      console.log(response)
       this.setState({
         blogTitle: '',
         blogAuthor: '',
         blogUrl: '',
-        blogs: this.state.blogs.concat(response)
+        blogs: this.state.blogs.concat(response),
+        notificationMessage: ('Created blog ' + newBlog.title)
       })
+      setTimeout(() => {
+        this.setState({notificationMessage: null})
+      }, 5000);
     } catch (error) {
+      this.setState({errorMessage: 'there was an error adding a blog'})
       console.log('Error:', error)
+      setTimeout(() => {
+        this.setState({errorMessage: null})
+      }, 5000);
     }
   }
 
@@ -129,15 +173,15 @@ class App extends React.Component {
       <form onSubmit={this.addBlog}>
         <div>
           title
-        <input type="text" name="blogTitle" value={this.state.blogTitle} onChange={this.handleTextField} />
+        <input required type="text" name="blogTitle" value={this.state.blogTitle} onChange={this.handleTextField} />
         </div>
         <div>
           author
-        <input type="text" name="blogAuthor" value={this.state.blogAuthor} onChange={this.handleTextField} />
+        <input required type="text" name="blogAuthor" value={this.state.blogAuthor} onChange={this.handleTextField} />
         </div>
         <div>
           url
-        <input type="text" name="blogUrl" value={this.state.blogUrl} onChange={this.handleTextField} />
+        <input required type="text" name="blogUrl" value={this.state.blogUrl} onChange={this.handleTextField} />
         </div>
         <button type="submit">add blog</button>
 
@@ -156,6 +200,8 @@ class App extends React.Component {
   render() {
     return (
       <div>
+        <Notification message={this.state.notificationMessage} />
+        <Error message={this.state.errorMessage} />
         {this.state.user === null ?
           this.loginForm() : this.blogDiv()}
       </div>
