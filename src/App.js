@@ -2,6 +2,7 @@ import React from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import Togglable from './components/Togglable'
 import './App.css'
 
 const LoginForm = (props) => (
@@ -26,6 +27,30 @@ const LoginForm = (props) => (
     </div>
     <button type="submit">kirjaudu</button>
   </form>
+)
+
+const NewBlog = ({ submit, title, author, url, handler }) => (
+
+  <div>
+    <h2>add new</h2>
+    <form onSubmit={submit}>
+      <div>
+        title
+        <input required type="text" name="blogTitle" value={title} onChange={handler} />
+      </div>
+      <div>
+        author
+        <input required type="text" name="blogAuthor" value={author} onChange={handler} />
+      </div>
+      <div>
+        url
+        <input required type="text" name="blogUrl" value={url} onChange={handler} />
+      </div>
+      <button type="submit">add blog</button>
+
+    </form>
+  </div>
+
 )
 
 const Notification = ({ message }) => {
@@ -92,14 +117,14 @@ class App extends React.Component {
 
       window.localStorage.setItem('loggedBlogUser', JSON.stringify(user))
       blogService.setToken(user.token)
-      this.setState({ username: '', password: '', user, notificationMessage: ('logged in as user ' + user.username)})
+      this.setState({ username: '', password: '', user, notificationMessage: ('logged in as user ' + user.username) })
       setTimeout(() => {
-        this.setState({notificationMessage: null})
+        this.setState({ notificationMessage: null })
       }, 5000);
     } catch (error) {
-      this.setState({errorMessage: 'wrong username or password'})
+      this.setState({ errorMessage: 'wrong username or password' })
       setTimeout(() => {
-        this.setState({errorMessage: null})
+        this.setState({ errorMessage: null })
       }, 5000);
     }
   }
@@ -108,7 +133,7 @@ class App extends React.Component {
     window.localStorage.removeItem('loggedBlogUser')
     this.setState({ user: null, notificationMessage: 'logout succesful' })
     setTimeout(() => {
-      this.setState({notificationMessage: null})
+      this.setState({ notificationMessage: null })
     }, 5000);
   }
 
@@ -118,6 +143,7 @@ class App extends React.Component {
 
   addBlog = async (event) => {
     event.preventDefault()
+    this.newBlog.toggleVisibility()
     try {
       const newBlog = {
         title: this.state.blogTitle,
@@ -134,76 +160,68 @@ class App extends React.Component {
         notificationMessage: ('Created blog ' + newBlog.title)
       })
       setTimeout(() => {
-        this.setState({notificationMessage: null})
+        this.setState({ notificationMessage: null })
       }, 5000);
     } catch (error) {
-      this.setState({errorMessage: 'there was an error adding a blog'})
+      this.setState({ errorMessage: 'there was an error adding a blog' })
       console.log('Error:', error)
       setTimeout(() => {
-        this.setState({errorMessage: null})
+        this.setState({ errorMessage: null })
       }, 5000);
     }
   }
 
-  loginForm = () => {
-    return (
-      <LoginForm
-        submit={this.login}
-        username={this.state.username}
-        password={this.state.password}
-        handleuser={this.handleTextField}
-        handlepass={this.handleTextField}
-      />
-    )
-  }
 
-  blogDiv = () => (
-    <div>
-      {this.userInfo()}
-      {this.newBlog()}
-      <h2>blogs</h2>
-      {this.state.blogs.map(blog =>
-        <Blog key={blog._id} blog={blog} />
-      )}
-    </div>
-  )
-  newBlog = () => (
-    <div>
-      <h2>add new</h2>
-      <form onSubmit={this.addBlog}>
-        <div>
-          title
-        <input required type="text" name="blogTitle" value={this.state.blogTitle} onChange={this.handleTextField} />
-        </div>
-        <div>
-          author
-        <input required type="text" name="blogAuthor" value={this.state.blogAuthor} onChange={this.handleTextField} />
-        </div>
-        <div>
-          url
-        <input required type="text" name="blogUrl" value={this.state.blogUrl} onChange={this.handleTextField} />
-        </div>
-        <button type="submit">add blog</button>
-
-      </form>
-    </div>
-  )
-  userInfo = () => (
-    <div>
-      logged in as user {this.state.user === null ?
-        'error' : this.state.user.username}
-      <button type="button" onClick={this.logout}>logout</button>
-    </div>
-  )
 
 
   render() {
+    const loginForm = () => {
+      return (
+        <LoginForm
+          submit={this.login}
+          username={this.state.username}
+          password={this.state.password}
+          handleuser={this.handleTextField}
+          handlepass={this.handleTextField}
+        />
+      )
+    }
+
+    const blogDiv = () => (
+      <div>
+        {userInfo()}
+        {newBlog()}
+        <h2>blogs</h2>
+        {this.state.blogs.map(blog =>
+          <Blog key={blog._id} blog={blog} />
+        )}
+      </div>
+    )
+    const newBlog = () => (
+      <Togglable buttonLabel="new blog" ref={component => this.newBlog = component}>
+        <NewBlog
+          submit={this.addBlog}
+          title={this.state.blogTitle}
+          author={this.state.blogAuthor}
+          url={this.state.blogUrl}
+          handler={this.handleTextField}
+        />
+      </Togglable>
+    )
+    const userInfo = () => (
+      <div>
+        logged in as user {this.state.user === null ?
+          'error' : this.state.user.username}
+        <button type="button" onClick={this.logout}>logout</button>
+      </div>
+    )
+
     return (
       <div>
         <Notification message={this.state.notificationMessage} />
         <Error message={this.state.errorMessage} />
         {this.state.user === null ?
-          this.loginForm() : this.blogDiv()}
+          loginForm() : blogDiv()}
       </div>
     );
   }
