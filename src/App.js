@@ -188,7 +188,7 @@ class App extends React.Component {
     }
 
     const blogDiv = () => (
-      <div>
+      <div className=".blogs">
         {userInfo()}
         {newBlog()}
         <h2>blogs</h2>
